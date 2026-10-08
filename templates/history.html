@@ -1,0 +1,11 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>History — VerifAI-v2</title>
+<link rel="stylesheet" href="/static/css/style.css"></head>
+<body><main>
+<h1>Last 20 verdicts</h1><a href="/">← Back</a>
+<table><tr><th>Time</th><th>URL</th><th>Verdict</th><th>Conf%</th><th>Why</th></tr>
+{% for p in predictions %}
+<tr><td>{{ p.created_at }}</td><td class="u">{{ p.url }}</td>
+<td class="{{ p.verdict }}">{{ p.verdict }}</td><td>{{ p.confidence }}</td><td>{{ p.summary }}</td></tr>
+{% endfor %}</table>
+</main></body></html>

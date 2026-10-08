@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Models (large, retrain locally)
+models/*.joblib
+!models/.gitkeep
+
+# DB (local history, don't commit)
+*.db
+*.sqlite3
+
+# OS
+.DS_Store
+Thumbs.db

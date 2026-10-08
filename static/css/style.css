@@ -1,0 +1,9 @@
+body{font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;margin:0}
+main{max-width:900px;margin:2rem auto;padding:0 1rem}
+.sub{color:#94a3b8}input,button{padding:.6rem;font-size:1rem;border-radius:8px;border:1px solid #334155}
+button{background:#22c55e;border:none;cursor:pointer;font-weight:700}
+#out{margin-top:1rem;padding:1rem;background:#1e293b;border-radius:10px;white-space:pre-wrap}
+table{width:100%;border-collapse:collapse;margin-top:1rem}
+td,th{border-bottom:1px solid #334155;padding:.5rem;text-align:left;font-size:.9rem}
+.Malicious{color:#f87171;font-weight:700}.Legitimate{color:#4ade80;font-weight:700}
+.u{max-width:260px;overflow:hidden;text-overflow:ellipsis}
