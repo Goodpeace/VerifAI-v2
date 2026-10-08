@@ -34,9 +34,11 @@ Phishing triage logic · Feature engineering · sklearn (LR/RF, train/test split
 confusion matrix, false-positive awareness) · Flask REST API · SQLite audit logging ·
 Tests · Git hygiene. Next: Docker + deploy + XGBoost + WHOIS (see docs/).
 
-## From v2 back to your 24k thesis
-Replace `data/sample_urls.csv` with your `urls_labelled.csv`, retrain —
-pipeline is identical, metrics jump to thesis numbers.
+## Full-scale results (24k URLs, lexical-only 10 features)
+`python train_model.py --full` → test set (3,615 URLs):
+RF **97.51%** acc, 98.92% prec, 96.07% rec, **1.05% FPR** ·
+LR 93.53% acc. Thesis (21 feat + WHOIS): RF 97.68%, XGB 98.56%.
+Full table + interview lines: `docs/01-scale-to-24k.md`.
 
 ## Safety
 Target URL is never fetched. Only the string is analysed.

@@ -1,51 +1,76 @@
 """Stage 2: numbers + labels -> saved model file.
 
-Run:  python train_model.py
-Reads data/sample_urls.csv (20 rows), extracts 10 features each,
-trains Logistic Regression (baseline) + Random Forest, prints accuracy,
-saves to models/. app.py loads these files — no retraining at runtime.
+Run:  python train_model.py            (20-row sample, 10 sec)
+      python train_model.py --full    (24k thesis data, ~1-2 min, lexical-only)
 
-For SOC jobs: you must be able to say "we split train/test, RF beat LR
-because non-linear, we watch false-positive rate because blocking legit
-bank = incident." Stage 3 (your 24k CSV) is where real metrics come from.
+Thesis used 21 features (needed WHOIS/DNS). v2 uses 10 lexical-only,
+so expect ~1-3 pts below thesis 98.5%. Deliberate tradeoff: <1ms,
+no internet, learnable. app.py loads these files - no retraining at runtime.
 """
+import argparse
 import os
 import joblib
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.metrics import (
+    accuracy_score, confusion_matrix, precision_score, recall_score, f1_score,
+)
 
 from config import DATA_PATH, MODEL_DIR, LR_PATH, RF_PATH, FEATURE_COLUMNS
 from feature_extractor import URLFeatureExtractor
 
 
-def main():
-    df = pd.read_csv(DATA_PATH)
-    print(f"Loaded {len(df)} URLs ({(df.label == 1).sum()} malicious)")
-
+def extract_matrix(urls):
     ext = URLFeatureExtractor()
-    X = [[ext.extract(u)[c] for c in FEATURE_COLUMNS] for u in df["url"]]
-    y = df["label"].values
+    return [[ext.extract(u)[c] for c in FEATURE_COLUMNS] for u in urls]
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.3, random_state=42, stratify=y
-    )
+
+def report(name, y_test, pred):
+    tn, fp, fn, tp = confusion_matrix(y_test, pred).ravel()
+    fpr = fp / (fp + tn) if (fp + tn) else 0
+    print(f"{name}: acc={accuracy_score(y_test, pred):.4f} "
+          f"prec={precision_score(y_test, pred, zero_division=0):.4f} "
+          f"rec={recall_score(y_test, pred, zero_division=0):.4f} "
+          f"f1={f1_score(y_test, pred, zero_division=0):.4f} "
+          f"FPR={fpr:.4f} cm=[[TN={tn} FP={fp}] [FN={fn} TP={tp}]]")
+
+
+def main(full: bool = False):
+    if full:
+        path = os.path.join(os.path.dirname(DATA_PATH), "urls_labelled.csv")
+        df = pd.read_csv(path)
+        print(f"Loaded {len(df)} URLs ({(df.label == 1).sum()} malicious)")
+        train_df = df[df["split"] == "train"]
+        val_df = df[df["split"] == "val"]
+        test_df = df[df["split"] == "test"]
+        print(f"Train: {len(train_df)}, Val->train: {len(val_df)}, Test: {len(test_df)}")
+        train_df = pd.concat([train_df, val_df])
+        X_train, y_train = extract_matrix(train_df["url"]), train_df["label"].values
+        X_test, y_test = extract_matrix(test_df["url"]), test_df["label"].values
+    else:
+        df = pd.read_csv(DATA_PATH)
+        print(f"Loaded {len(df)} URLs ({(df.label == 1).sum()} malicious)")
+        X = extract_matrix(df["url"])
+        y = df["label"].values
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.3, random_state=42, stratify=y
+        )
 
     models = {
         "logistic_regression": LogisticRegression(max_iter=1000),
-        "random_forest": RandomForestClassifier(n_estimators=100, random_state=42),
+        "random_forest": RandomForestClassifier(n_estimators=200, random_state=42, n_jobs=-1),
     }
     os.makedirs(MODEL_DIR, exist_ok=True)
     for name, m in models.items():
         m.fit(X_train, y_train)
-        pred = m.predict(X_test)
-        acc = accuracy_score(y_test, pred)
-        print(f"{name}: accuracy={acc:.2f} cm={confusion_matrix(y_test, pred).tolist()}")
+        report(name, y_test, m.predict(X_test))
         joblib.dump(m, LR_PATH if "logistic" in name else RF_PATH)
     print("Saved to models/. Now run: python app.py")
 
 
 if __name__ == "__main__":
-    main()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--full", action="store_true", help="train on 24k urls_labelled.csv")
+    main(full=ap.parse_args().full)
