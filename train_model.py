@@ -11,6 +11,7 @@ import argparse
 import os
 import joblib
 import pandas as pd
+from urllib.parse import urlparse
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
@@ -47,7 +48,24 @@ def main(full: bool = False):
         test_df = df[df["split"] == "test"]
         print(f"Train: {len(train_df)}, Val->train: {len(val_df)}, Test: {len(test_df)}")
         train_df = pd.concat([train_df, val_df])
+        # Augment TRAIN ONLY (never test): host-only variant of every URL
+        # with a path, same label. Teaches the model that "google.com" and
+        # "https://www.google.com/long/article" share one verdict - judges
+        # the host, not the path length. This fixes shortened-URL bias.
+        aug_urls, aug_labels = [], []
+        for u, y in zip(train_df["url"], train_df["label"]):
+            try:
+                p = urlparse(str(u).lower().strip())
+                if p.hostname and (p.path.strip("/") or p.query):
+                    aug_urls.append(f"{p.scheme or 'https'}://{p.hostname}")
+                    aug_labels.append(y)
+            except Exception:
+                pass
+        print(f"Augmented train with {len(aug_urls)} host-only variants")
         X_train, y_train = extract_matrix(train_df["url"]), train_df["label"].values
+        if aug_urls:
+            X_train = X_train + extract_matrix(aug_urls)
+            y_train = list(y_train) + aug_labels
         X_test, y_test = extract_matrix(test_df["url"]), test_df["label"].values
     else:
         df = pd.read_csv(DATA_PATH)

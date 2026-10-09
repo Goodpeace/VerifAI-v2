@@ -23,16 +23,19 @@ class URLFeatureExtractor:
         "special_char_count",  # !!!, ___, %%% = obfuscation
         "has_ip_address",   # http://192.168.1.1/login = never legit for banks
         "has_at_symbol",    # http://google.com@evil.com -> browser goes to evil.com
-        "has_https",        # 1 if https, 0 otherwise (weak signal alone!)
+        "has_https",        # 1 if https, 0 otherwise (strongest single signal: 0.68 importance)
     ]
 
     IP_RE = re.compile(r"^(?:\d{1,3}\.){3}\d{1,3}$")
 
     def extract(self, url: str) -> dict:
-        # 1. Normalise: lowercase, strip, add http:// if missing
+        # 1. Normalise: lowercase, strip, add https:// if missing.
+        # Why https and not http? Browsers (Chrome/Edge since 2021) navigate
+        # scheme-less input as https. Assuming http punishes every shortened
+        # legit URL ("google.com" -> Malicious) because has_https dominates.
         u = url.lower().strip()
         if "://" not in u:
-            u = "http://" + u
+            u = "https://" + u
         parsed = urlparse(u)
         domain = parsed.hostname or ""
         path = parsed.path or ""

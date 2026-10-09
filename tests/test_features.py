@@ -18,6 +18,14 @@ def test_https_detected():
     assert e.extract("https://www.google.com")["has_https"] == 1.0
     assert e.extract("http://example.com")["has_https"] == 0.0
 
+def test_bare_domain_defaults_to_https():
+    # Regression: "google.com" must analyse as https (browsers do this).
+    # Old http default made EVERY shortened legit URL read Malicious.
+    e = URLFeatureExtractor()
+    assert e.extract("google.com")["has_https"] == 1.0
+    assert e.extract("kpmg.com")["has_https"] == 1.0
+
 if __name__ == "__main__":
     test_ip_flagged(); test_at_trick_flagged(); test_https_detected()
-    print("3/3 feature tests passed")
+    test_bare_domain_defaults_to_https()
+    print("4/4 feature tests passed")
