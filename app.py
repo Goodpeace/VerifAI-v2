@@ -4,9 +4,12 @@ Routes:
   GET  /        -> check form
   POST /predict -> JSON {verdict, confidence, explanation}
   GET  /history -> last 20 verdicts (audit trail)
+  GET  /health  -> {"status": "ok"} (Docker/Render health check)
 
-Run: python app.py -> open http://127.0.0.1:5000
+Run dev:  python app.py -> open http://127.0.0.1:5000
+Run prod: gunicorn app:app --bind 0.0.0.0:$PORT (Docker does this)
 """
+import os
 import joblib
 import numpy as np
 from flask import Flask, request, jsonify, render_template
@@ -28,7 +31,7 @@ def load_models():
             models[name] = joblib.load(path)
             print(f"Loaded {name}")
         except FileNotFoundError:
-            print(f"Missing {path} — run: python train_model.py")
+            print(f"Missing {path} - run: python train_model.py")
 
 
 @app.route("/")
@@ -36,8 +39,15 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/health")
+def health():
+    return jsonify({"status": "ok", "models_loaded": list(models.keys())})
+
+
 @app.route("/predict", methods=["POST"])
 def predict():
+    if not models:
+        return jsonify({"error": "Models not trained yet. Run: python train_model.py --full"}), 503
     data = request.get_json(force=True, silent=True) or {}
     url = data.get("url", "").strip()
     if not url:
@@ -67,7 +77,11 @@ def history():
     return render_template("history.html", predictions=database.recent())
 
 
+# Load at import so gunicorn workers (which don't run __main__) have models.
+database.init_db()
+load_models()
+
 if __name__ == "__main__":
-    database.init_db()
-    load_models()
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    debug = os.environ.get("FLASK_DEBUG", "1") == "1"
+    app.run(host="0.0.0.0", port=port, debug=debug)
