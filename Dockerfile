@@ -8,12 +8,14 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy code + 24k CSV, train models during build
-COPY config.py feature_extractor.py train_model.py explainer.py database.py app.py ./
+# Copy code + 24k CSV, train models + tune threshold during build.
+# Every .py the app imports must be listed here (a missing file = crash on deploy).
+COPY config.py feature_extractor.py train_model.py tune_threshold.py explainer.py host_intel.py database.py app.py ./
 COPY data/ ./data/
 COPY templates/ ./templates/
 COPY static/ ./static/
-RUN python train_model.py --full
+COPY tests/ ./tests/
+RUN python train_model.py --full && python tune_threshold.py && python tests/test_features.py && python tests/test_host.py
 
 EXPOSE 5000
 ENV PORT=5000 FLASK_DEBUG=0

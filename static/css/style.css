@@ -1,10 +1,51 @@
-body{font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;margin:0}
-main{max-width:900px;margin:2rem auto;padding:0 1rem}
-.sub{color:#94a3b8}input,button{padding:.6rem;font-size:1rem;border-radius:8px;border:1px solid #334155}
-button{background:#22c55e;border:none;cursor:pointer;font-weight:700}
-#out{margin-top:1rem;padding:1rem;background:#1e293b;border-radius:10px;white-space:pre-wrap}
+:root{
+  --bg:#0b1220; --card:#151f32; --line:#263349; --text:#e8eef7; --muted:#93a3bb;
+  --green:#22c55e; --green-bg:rgba(34,197,94,.12);
+  --amber:#f59e0b; --amber-bg:rgba(245,158,11,.12);
+  --red:#ef4444; --red-bg:rgba(239,68,68,.12);
+}
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);margin:0;line-height:1.55}
+main{max-width:760px;margin:0 auto;padding:2.5rem 1.25rem 4rem}
+header h1{font-size:2.2rem;margin:0 0 .4rem;letter-spacing:-.02em}
+.sub{color:var(--muted);margin:0 0 1.5rem;font-size:1.05rem}
+form{display:flex;gap:.6rem;margin-bottom:.4rem}
+input{flex:1;padding:.8rem 1rem;font-size:1rem;border-radius:10px;border:1px solid var(--line);background:#0f1830;color:var(--text)}
+input:focus{outline:2px solid #38bdf8;border-color:#38bdf8}
+button{padding:.8rem 1.4rem;font-size:1rem;font-weight:700;border:none;border-radius:10px;background:var(--green);color:#06210f;cursor:pointer;white-space:nowrap}
+button:hover{filter:brightness(1.1)}
+button:disabled{opacity:.6;cursor:wait}
+.nav{margin:.2rem 0 1.5rem}.nav a{color:var(--muted);font-size:.9rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.4rem;margin-top:1rem}
+.badge{display:inline-block;font-size:1.25rem;font-weight:800;padding:.35rem 1rem;border-radius:999px;margin:0 0 .4rem}
+.badge.Malicious{background:var(--red-bg);color:#fca5a5;border:1px solid var(--red)}
+.badge.Uncertain{background:var(--amber-bg);color:#fcd34d;border:1px solid var(--amber)}
+.badge.Legitimate{background:var(--green-bg);color:#86efac;border:1px solid var(--green)}
+.conf{color:var(--muted);font-size:.95rem;margin:.1rem 0 .8rem}
+.meter{height:10px;border-radius:999px;background:#0a0f1e;overflow:hidden;margin:.3rem 0 1rem}
+.meter>div{height:100%;border-radius:999px}
+.meter.Malicious>div{background:var(--red)}
+.meter.Uncertain>div{background:var(--amber)}
+.meter.Legitimate>div{background:var(--green)}
+.why{font-size:1.02rem;margin:.4rem 0 1rem}
+h3{font-size:.85rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:1.2rem 0 .5rem}
+ul.factors{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.5rem}
+ul.factors li{background:#0f1830;border:1px solid var(--line);border-left-width:5px;border-radius:8px;padding:.6rem .8rem;font-size:.95rem}
+ul.factors li.malicious{border-left-color:var(--red)}
+ul.factors li.legitimate{border-left-color:var(--green)}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-radius:6px;padding:.05rem .45rem;margin-right:.5rem;vertical-align:middle}
+li.malicious .tag{background:var(--red-bg);color:#fca5a5}
+li.legitimate .tag{background:var(--green-bg);color:#86efac}
+.action{border-radius:10px;padding:.8rem 1rem;margin-top:1.1rem;font-size:.97rem}
+.action.Malicious{background:var(--red-bg);border:1px solid var(--red)}
+.action.Uncertain{background:var(--amber-bg);border:1px solid var(--amber)}
+.action.Legitimate{background:var(--green-bg);border:1px solid var(--green)}
+.host{color:var(--muted);font-size:.88rem;margin-top:.9rem}
+details.tech{margin-top:1rem;color:var(--muted);font-size:.82rem}
+details.tech pre{background:#0a0f1e;border:1px solid var(--line);border-radius:8px;padding:.8rem;overflow:auto;max-height:300px}
+.error{background:var(--red-bg);border:1px solid var(--red);border-radius:10px;padding:.8rem 1rem}
 table{width:100%;border-collapse:collapse;margin-top:1rem}
-td,th{border-bottom:1px solid #334155;padding:.5rem;text-align:left;font-size:.9rem}
-.Malicious{color:#f87171;font-weight:700}.Legitimate{color:#4ade80;font-weight:700}
-.Uncertain{color:#fbbf24;font-weight:700}
-.u{max-width:260px;overflow:hidden;text-overflow:ellipsis}
+td,th{border-bottom:1px solid var(--line);padding:.55rem .5rem;text-align:left;font-size:.9rem}
+td.Malicious{color:#f87171;font-weight:700}td.Legitimate{color:#4ade80;font-weight:700}td.Uncertain{color:#fbbf24;font-weight:700}
+.u{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:560px){form{flex-direction:column}}
