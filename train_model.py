@@ -78,7 +78,8 @@ def main(full: bool = False):
 
     models = {
         "logistic_regression": LogisticRegression(max_iter=1000),
-        "random_forest": RandomForestClassifier(n_estimators=200, random_state=42, n_jobs=-1),
+        # n_jobs=2 (not -1): bounded memory for 512MB build containers.
+        "random_forest": RandomForestClassifier(n_estimators=200, random_state=42, n_jobs=2),
     }
     os.makedirs(MODEL_DIR, exist_ok=True)
     for name, m in models.items():

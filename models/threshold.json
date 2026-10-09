@@ -1,0 +1,8 @@
+{
+  "threshold": 0.95,
+  "target_fpr": 0.005,
+  "val_fpr": 0.006219227779217414,
+  "val_recall": 0.8932626797880394,
+  "val_precision": 0.9932659932659933,
+  "method": "single-80/20-split-train-only-seed-42"
+}

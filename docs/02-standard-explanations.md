@@ -12,9 +12,10 @@ numba/llvmlite (~42MB native, undownloadable here, Docker bloat).
 This is ~40 lines of sklearn, <5ms, zero new dependencies.
 
 ## Operating point (minimise false alarms)
-`tune_threshold.py` scans thresholds on TRAIN out-of-fold predictions
-(test set untouched). 0.5% FPR was unreachable below 0.95:
-thr=0.95 -> OOF FPR 0.49%, recall 88.6%. Final unseen TEST@0.95:
+`tune_threshold.py` scans thresholds on a fixed 80/20 split of TRAIN
+(test set untouched; single split, seed 42 - chosen over 5-fold OOF so the
+Docker build fits in 512MB). 0.5% FPR was unreachable below 0.95:
+thr=0.95 -> val FPR 0.62%, recall 89.3%. Final unseen TEST@0.95:
 **acc 95.19%, prec 99.82%, rec 90.54%, FPR 0.17% (3 FP / 3615)**,
 review-band rate 3.8%. Price of near-zero false alarms: ~9% of phish
 land in Uncertain for human review instead of auto-block. Documented,
