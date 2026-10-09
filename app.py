@@ -19,9 +19,14 @@ from config import FEATURE_COLUMNS, RF_PATH, LR_PATH, MAX_URL_LENGTH
 from feature_extractor import URLFeatureExtractor
 from explainer import explain
 from host_intel import get_host_signals, adjust_with_host
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import database
 
 app = Flask(__name__)
+# Public demo protection: 30 requests/min per IP (same policy as thesis v1).
+limiter = Limiter(get_remote_address, app=app, default_limits=["30 per minute"],
+                  storage_uri="memory://")
 extractor = URLFeatureExtractor()
 models = {}
 
@@ -47,6 +52,7 @@ def health():
 
 
 @app.route("/predict", methods=["POST"])
+@limiter.limit("30 per minute")
 def predict():
     if not models:
         return jsonify({"error": "Models not trained yet. Run: python train_model.py --full"}), 503
@@ -98,6 +104,11 @@ def predict():
 @app.route("/history")
 def history():
     return render_template("history.html", predictions=database.recent())
+
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    return jsonify({"error": "Rate limit exceeded (30/min). Slow down - triage queues are human-paced."}), 429
 
 
 # Load at import so gunicorn workers (which don't run __main__) have models.

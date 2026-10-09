@@ -4,5 +4,6 @@ pandas==2.2.2
 numpy==1.26.4
 joblib==1.4.0
 gunicorn==22.0.0
+flask-limiter==4.1.1
 python-whois==0.9.6
 dnspython==2.9.0
