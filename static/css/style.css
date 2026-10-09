@@ -6,4 +6,5 @@ button{background:#22c55e;border:none;cursor:pointer;font-weight:700}
 table{width:100%;border-collapse:collapse;margin-top:1rem}
 td,th{border-bottom:1px solid #334155;padding:.5rem;text-align:left;font-size:.9rem}
 .Malicious{color:#f87171;font-weight:700}.Legitimate{color:#4ade80;font-weight:700}
+.Uncertain{color:#fbbf24;font-weight:700}
 .u{max-width:260px;overflow:hidden;text-overflow:ellipsis}

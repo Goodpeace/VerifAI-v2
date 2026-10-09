@@ -37,10 +37,11 @@ confusion matrix, false-positive awareness) · Flask REST API · SQLite audit lo
 Tests · Git hygiene. Next: Docker + deploy + XGBoost + WHOIS (see docs/).
 
 ## Full-scale results (24k URLs, lexical-only 10 features)
-`python train_model.py --full` → test set (3,615 URLs):
-RF **97.51%** acc, 98.92% prec, 96.07% rec, **1.05% FPR** ·
-LR 93.53% acc. Thesis (21 feat + WHOIS): RF 97.68%, XGB 98.56%.
-Full table + interview lines: `docs/01-scale-to-24k.md`.
+Operating point thr=0.95 (tuned out-of-fold for ~0.5% FPR, test untouched).
+Unseen test (3,615 URLs): RF **95.19%** acc, **99.82%** prec, 90.54% rec,
+**0.17% FPR (3 FP)** · review band 3.8% Uncertain for manual triage.
+Explanations are exact tree-path contributions (proof in
+`docs/02-standard-explanations.md`), not heuristics.
 
 ## Safety
 Target URL is never fetched. Only the string is analysed.

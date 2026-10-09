@@ -62,10 +62,10 @@ def predict():
     name = "random_forest" if "random_forest" in models else "logistic_regression"
     proba = models[name].predict_proba(vec)[0]
     mal_prob = float(proba[1])
-    is_mal = mal_prob > 0.5
-    conf = mal_prob if is_mal else float(proba[0])
 
-    exp = explain(feats, is_mal, conf)
+    exp = explain(feats, mal_prob, rf_model=models.get("random_forest"))
+    conf = mal_prob if exp["verdict"] == "Malicious" else (
+        (1 - mal_prob) if exp["verdict"] == "Legitimate" else mal_prob)
     database.save(url, exp["verdict"], round(conf * 100, 2), exp["summary"])
     return jsonify({"url": url, "verdict": exp["verdict"],
                     "confidence": round(conf * 100, 2),
