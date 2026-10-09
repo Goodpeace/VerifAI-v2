@@ -1,5 +1,7 @@
 # VerifAI-v2 — Explainable Malicious-URL Triage (SOC Analyst Build)
 
+**Live demo: https://verifai-v2.onrender.com** (free tier sleeps ~30s on first load)
+
 Rebuilt for learning + hiring in Tokyo / Singapore. Original thesis project
 (`Goodpeace/VerifAI`, 24k URLs, 21 features, XGBoost 98.5%) is preserved untouched.
 This is the clean, explainable, deployable version you can defend in interviews.
