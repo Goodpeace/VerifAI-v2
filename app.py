@@ -12,11 +12,13 @@ Run prod: gunicorn app:app --bind 0.0.0.0:$PORT (Docker does this)
 import os
 import joblib
 import numpy as np
+from urllib.parse import urlparse
 from flask import Flask, request, jsonify, render_template
 
 from config import FEATURE_COLUMNS, RF_PATH, LR_PATH, MAX_URL_LENGTH
 from feature_extractor import URLFeatureExtractor
 from explainer import explain
+from host_intel import get_host_signals, adjust_with_host
 import database
 
 app = Flask(__name__)
@@ -64,12 +66,33 @@ def predict():
     mal_prob = float(proba[1])
 
     exp = explain(feats, mal_prob, rf_model=models.get("random_forest"))
-    conf = mal_prob if exp["verdict"] == "Malicious" else (
-        (1 - mal_prob) if exp["verdict"] == "Legitimate" else mal_prob)
+
+    # Tier 2: host intel ONLY for the Uncertain band (~4% of traffic).
+    # Confident verdicts are never flipped here - only annotated.
+    tier2 = None
+    if exp["verdict"] == "Uncertain":
+        host = urlparse(("https://" + url) if "://" not in url else url).hostname or ""
+        sig = get_host_signals(host)
+        new_verdict, host_factors = adjust_with_host("Uncertain", mal_prob, sig)
+        tier2 = {"host": host, "signals": sig, "escalated_to": new_verdict}
+        if new_verdict != "Uncertain":
+            exp["verdict"] = new_verdict
+            exp["factors"].extend(host_factors)
+            exp["summary"] += " Host-tier resolution: " + " ".join(
+                f["reason"] for f in host_factors if f["feature"] != "host_lookup")
+        else:
+            exp["factors"].extend(host_factors)
+
+    if exp["verdict"] == "Malicious":
+        conf = mal_prob if tier2 is None or tier2["escalated_to"] == "Uncertain" else 0.75
+    elif exp["verdict"] == "Legitimate":
+        conf = 1 - mal_prob
+    else:
+        conf = mal_prob
     database.save(url, exp["verdict"], round(conf * 100, 2), exp["summary"])
     return jsonify({"url": url, "verdict": exp["verdict"],
                     "confidence": round(conf * 100, 2),
-                    "model_used": name, "explanation": exp})
+                    "model_used": name, "tier2": tier2, "explanation": exp})
 
 
 @app.route("/history")

@@ -12,6 +12,9 @@ models/*.joblib
 *.db
 *.sqlite3
 
+# Host-intel cache (runtime data, rebuilt automatically)
+data/.host_cache.json
+
 # OS
 .DS_Store
 Thumbs.db
